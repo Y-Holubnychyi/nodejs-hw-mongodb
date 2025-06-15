@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import pino from 'pino-http';
-import { getContacts, getContactById } from './services/contacts.js';
+import contactsRouter from './routers/contacts.js';
 import { getEnvVar } from './utils/getEnvVar.js';
 
 export const startServer = () => {
@@ -17,43 +17,23 @@ export const startServer = () => {
     }),
   );
 
+  app.use(express.json());
+
   app.get('/', (req, res) => {
     res.json({ message: 'Start Work' });
   });
 
-  app.get('/contacts', async (req, res) => {
-    const contacts = await getContacts();
-    res.json({
-      status: 200,
-      message: 'Successfully found contacts!',
-      data: contacts,
-    });
-  });
+  // Підключення маршруту /contacts
+  app.use('/contacts', contactsRouter);
 
-  app.get('/contacts/:id', async (req, res) => {
-    const { id } = req.params;
-    const contact = await getContactById(id);
-
-    if (!contact) {
-      return res.status(404).json({
-        status: 404,
-        message: 'Contact not found',
-      });
-    }
-
-    res.json({
-      status: 200,
-      message: `Successfully found contact with id ${id}!`,
-      data: contact,
-    });
-  });
-
+  // Обробка 404
   app.use((req, res) => {
     res.status(404).json({
       message: `${req.url} not found`,
     });
   });
 
+  // Загальний error handler
   app.use((error, req, res, next) => {
     res.status(500).json({
       message: 'Server error!',
