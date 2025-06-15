@@ -3,6 +3,8 @@ import cors from 'cors';
 import pino from 'pino-http';
 import contactsRouter from './routers/contacts.js';
 import { getEnvVar } from './utils/getEnvVar.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 export const startServer = () => {
   const app = express();
@@ -27,19 +29,10 @@ export const startServer = () => {
   app.use('/contacts', contactsRouter);
 
   // Обробка 404
-  app.use((req, res) => {
-    res.status(404).json({
-      message: `${req.url} not found`,
-    });
-  });
+  app.use(notFoundHandler);
 
   // Загальний error handler
-  app.use((error, req, res, next) => {
-    res.status(500).json({
-      message: 'Server error!',
-      error: error.message,
-    });
-  });
+  app.use(errorHandler);
 
   const port = Number(getEnvVar('PORT', 3000));
   app.listen(port, () => console.log(`Server running on ${port} port`));

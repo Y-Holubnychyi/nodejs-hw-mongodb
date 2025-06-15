@@ -1,7 +1,11 @@
-// src/controllers/contacts.js
+import mongoose from 'mongoose';
 import { getContacts, getContactById } from '../services/contacts.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { HttpError } from '../utils/HttpError.js';
 
-export const getAllContacts = async (req, res) => {
+const { isValidObjectId } = mongoose;
+
+const getAllContacts = async (req, res) => {
   const contacts = await getContacts();
   res.json({
     status: 200,
@@ -10,15 +14,17 @@ export const getAllContacts = async (req, res) => {
   });
 };
 
-export const getContact = async (req, res) => {
+const getContact = async (req, res) => {
   const { id } = req.params;
+
+  if (!isValidObjectId(id)) {
+    throw new HttpError(400, 'Invalid id format');
+  }
+
   const contact = await getContactById(id);
 
   if (!contact) {
-    return res.status(404).json({
-      status: 404,
-      message: 'Contact not found',
-    });
+    throw new HttpError(404, 'Contact not found');
   }
 
   res.json({
@@ -26,4 +32,9 @@ export const getContact = async (req, res) => {
     message: `Successfully found contact with id ${id}!`,
     data: contact,
   });
+};
+
+export default {
+  getAllContacts: ctrlWrapper(getAllContacts),
+  getContact: ctrlWrapper(getContact),
 };
