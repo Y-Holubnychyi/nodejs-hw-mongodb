@@ -2,13 +2,12 @@ import { isHttpError } from 'http-errors';
 
 export const errorHandler = (err, req, res, next) => {
   if (isHttpError(err)) {
-    return res.status(err.statusCode).json({
-      status: err.statusCode,
+    return res.status(err.status).json({
+      status: err.status,
       message: err.message,
-      data: err.expose ? err : undefined, // за бажанням можна додати деталі помилки, якщо потрібно
+      data: err.expose ? err : undefined,
     });
   }
-  // для інших неочікуваних помилок
   const status = err.status || 500;
 
   res.status(status).json({

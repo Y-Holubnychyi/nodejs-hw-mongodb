@@ -25,13 +25,10 @@ export const startServer = () => {
     res.json({ message: 'Start Work' });
   });
 
-  // Підключення маршруту /contacts
   app.use('/contacts', contactsRouter);
 
-  // Обробка 404
   app.use(notFoundHandler);
 
-  // Загальний error handler
   app.use(errorHandler);
 
   const port = Number(getEnvVar('PORT', 3000));
