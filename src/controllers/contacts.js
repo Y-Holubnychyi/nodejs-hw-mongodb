@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import {
-  getContacts,
+  getPaginatedContacts,
   getContactById,
   createContact,
   updateContact,
@@ -8,15 +8,44 @@ import {
 } from '../services/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
 import { HttpError } from '../utils/HttpError.js';
+import { parseSortParams } from '../utils/parseSortParams.js';
+import { parsePaginationParams } from '../utils/parsePaginationParams.js';
+import { parseFilterParams } from '../utils/parseFilterParams.js';
+import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 
 const { isValidObjectId } = mongoose;
 
 const getAllContacts = async (req, res) => {
-  const contacts = await getContacts();
+  const { page, perPage } = parsePaginationParams(req.query);
+  const { sortBy, sortOrder } = parseSortParams(req.query);
+  const order = sortOrder === 'desc' ? -1 : 1;
+
+  const filterFromQuery = parseFilterParams(req.query);
+  const filter = { ...filterFromQuery };
+
+  if (typeof req.query.isFavourite !== 'undefined') {
+    filter.isFavourite = req.query.isFavourite === 'true';
+  }
+
+  if (req.query.contactType) {
+    filter.contactType = req.query.contactType;
+  }
+
+  const { contacts, totalItems } = await getPaginatedContacts(page, perPage, {
+    sortBy,
+    order,
+    filter,
+  });
+
+  const paginationData = calculatePaginationData(totalItems, perPage, page);
+
   res.json({
     status: 200,
     message: 'Successfully found contacts!',
-    data: contacts,
+    data: {
+      data: contacts,
+      ...paginationData,
+    },
   });
 };
 

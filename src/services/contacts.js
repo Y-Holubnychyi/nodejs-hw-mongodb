@@ -1,15 +1,36 @@
-import ContactCollection from '../db/models/contacts.js';
+import Contact from '../db/models/contacts.js';
 
-export const getContacts = () => ContactCollection.find();
+export const getPaginatedContacts = async (
+  page = 1,
+  perPage = 10,
+  options = {},
+) => {
+  const { sortBy = 'name', order = 1, filter = {} } = options;
 
-export const getContactById = (id) => ContactCollection.findById(id);
+  const skip = (page - 1) * perPage;
 
-export const createContact = (data) => ContactCollection.create(data);
+  const contacts = await Contact.find(filter)
+    .sort({ [sortBy]: order })
+    .skip(skip)
+    .limit(perPage);
 
-export const updateContact = (id, data) =>
-  ContactCollection.findByIdAndUpdate(id, data, { new: true });
+  const totalItems = await Contact.countDocuments(filter);
+
+  return { contacts, totalItems };
+};
+
+export const getContactById = async (id) => {
+  return Contact.findById(id);
+};
+
+export const createContact = async (data) => {
+  return Contact.create(data);
+};
+
+export const updateContact = async (id, data) => {
+  return Contact.findByIdAndUpdate(id, data, { new: true });
+};
 
 export const deleteContact = async (id) => {
-  const deleted = await ContactCollection.findByIdAndDelete(id);
-  return deleted;
+  return Contact.findByIdAndDelete(id);
 };
