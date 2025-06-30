@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
-
 import { UsersCollection } from '../db/models/user.js';
 import { SessionsCollection } from '../db/models/session.js';
 import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
@@ -70,4 +69,18 @@ export const refreshSession = async (sessionId, refreshToken) => {
   });
 
   return newSession;
+};
+
+export const logoutUser = async (sessionId, refreshToken) => {
+  const session = await SessionsCollection.findById(sessionId);
+
+  if (
+    !session ||
+    session.refreshToken !== refreshToken ||
+    session.refreshTokenValidUntil < new Date()
+  ) {
+    throw createHttpError(403, 'Invalid session');
+  }
+
+  await SessionsCollection.findByIdAndDelete(sessionId);
 };

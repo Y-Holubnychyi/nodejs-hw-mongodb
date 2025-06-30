@@ -1,4 +1,9 @@
-import { registerUser, loginUser, refreshSession } from '../services/auth.js';
+import {
+  registerUser,
+  loginUser,
+  refreshSession,
+  logoutUser,
+} from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/index.js';
 import createHttpError from 'http-errors';
 
@@ -60,4 +65,19 @@ export const refreshSessionController = async (req, res) => {
       accessToken: newSession.accessToken,
     },
   });
+};
+
+export const logoutUserController = async (req, res) => {
+  const { sessionId, refreshToken } = req.cookies;
+
+  if (!sessionId || !refreshToken) {
+    throw createHttpError(401, 'No session');
+  }
+
+  await logoutUser(sessionId, refreshToken);
+
+  res.clearCookie('refreshToken');
+  res.clearCookie('sessionId');
+
+  res.status(204).send();
 };
