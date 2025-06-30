@@ -22,13 +22,13 @@ export const startServer = () => {
   );
 
   app.use(express.json());
-
+  app.use(cookieParser());
   app.get('/', (req, res) => {
     res.json({ message: 'Start Work' });
   });
 
   app.use('/auth', authRouter);
-  app.use(cookieParser());
+
   app.use('/contacts', contactsRouter);
 
   app.use(notFoundHandler);

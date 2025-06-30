@@ -1,5 +1,6 @@
-import { registerUser, loginUser } from '../services/auth.js';
+import { registerUser, loginUser, refreshSession } from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/index.js';
+import createHttpError from 'http-errors';
 
 export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
@@ -29,6 +30,34 @@ export const loginUserController = async (req, res) => {
     message: 'Successfully logged in an user!',
     data: {
       accessToken: session.accessToken,
+    },
+  });
+};
+
+export const refreshSessionController = async (req, res) => {
+  const { sessionId, refreshToken } = req.cookies;
+
+  if (!sessionId || !refreshToken) {
+    throw createHttpError(401, 'No session');
+  }
+
+  const newSession = await refreshSession(sessionId, refreshToken);
+
+  res.cookie('refreshToken', newSession.refreshToken, {
+    httpOnly: true,
+    expires: new Date(Date.now() + THIRTY_DAYS),
+  });
+
+  res.cookie('sessionId', newSession._id.toString(), {
+    httpOnly: true,
+    expires: new Date(Date.now() + THIRTY_DAYS),
+  });
+
+  res.status(200).json({
+    status: 200,
+    message: 'Successfully refreshed a session!',
+    data: {
+      accessToken: newSession.accessToken,
     },
   });
 };

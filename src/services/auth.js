@@ -44,3 +44,30 @@ export const loginUser = async ({ email, password }) => {
 
   return session;
 };
+
+export const refreshSession = async (sessionId, refreshToken) => {
+  const session = await SessionsCollection.findById(sessionId);
+
+  if (
+    !session ||
+    session.refreshToken !== refreshToken ||
+    session.refreshTokenValidUntil < new Date()
+  ) {
+    throw createHttpError(403, 'Invalid session');
+  }
+
+  await SessionsCollection.findByIdAndDelete(sessionId);
+
+  const accessToken = randomBytes(30).toString('base64');
+  const newRefreshToken = randomBytes(30).toString('base64');
+
+  const newSession = await SessionsCollection.create({
+    userId: session.userId,
+    accessToken,
+    refreshToken: newRefreshToken,
+    accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
+    refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
+  });
+
+  return newSession;
+};
