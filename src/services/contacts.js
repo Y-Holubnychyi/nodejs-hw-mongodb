@@ -27,10 +27,10 @@ export const createContact = async (data) => {
   return Contact.create(data);
 };
 
-export const updateContact = async (id, data) => {
-  return Contact.findByIdAndUpdate(id, data, { new: true });
+export const updateContact = async (id, userId, data) => {
+  return Contact.findOneAndUpdate({ _id: id, userId }, data, { new: true });
 };
 
-export const deleteContact = async (id) => {
-  return Contact.findByIdAndDelete(id);
+export const deleteContact = async (id, userId) => {
+  return Contact.findOneAndDelete({ _id: id, userId });
 };

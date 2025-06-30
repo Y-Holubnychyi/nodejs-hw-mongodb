@@ -7,8 +7,11 @@ import {
   updateContactSchema,
 } from '../validation/contacts.js';
 import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { authenticate } from '../middlewares/authenticate.js';
 
 const router = express.Router();
+
+router.use(authenticate);
 
 router.get('/', ctrlWrapper(contactsController.getAllContacts));
 router.get('/:id', isValidId, ctrlWrapper(contactsController.getContact));

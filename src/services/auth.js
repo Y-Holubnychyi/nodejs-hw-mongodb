@@ -1,9 +1,11 @@
 import bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
 import createHttpError from 'http-errors';
 import { UsersCollection } from '../db/models/user.js';
 import { SessionsCollection } from '../db/models/session.js';
 import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
+import jwt from 'jsonwebtoken';
+const { JWT_SECRET } = process.env;
+import mongoose from 'mongoose';
 
 export const registerUser = async (payload) => {
   const user = await UsersCollection.findOne({ email: payload.email });
@@ -30,10 +32,28 @@ export const loginUser = async ({ email, password }) => {
 
   await SessionsCollection.deleteOne({ userId: user._id });
 
-  const accessToken = randomBytes(30).toString('base64');
-  const refreshToken = randomBytes(30).toString('base64');
+  const sessionId = new mongoose.Types.ObjectId();
+
+  const accessToken = jwt.sign(
+    {
+      userId: user._id.toString(),
+      sessionId: sessionId.toString(),
+    },
+    JWT_SECRET,
+    { expiresIn: '15m' },
+  );
+
+  const refreshToken = jwt.sign(
+    {
+      userId: user._id.toString(),
+      sessionId: sessionId.toString(),
+    },
+    JWT_SECRET,
+    { expiresIn: '30d' },
+  );
 
   const session = await SessionsCollection.create({
+    _id: sessionId,
     userId: user._id,
     accessToken,
     refreshToken,
@@ -57,12 +77,30 @@ export const refreshSession = async (sessionId, refreshToken) => {
 
   await SessionsCollection.findByIdAndDelete(sessionId);
 
-  const accessToken = randomBytes(30).toString('base64');
-  const newRefreshToken = randomBytes(30).toString('base64');
+  const newSessionId = new mongoose.Types.ObjectId();
+
+  const newAccessToken = jwt.sign(
+    {
+      userId: session.userId.toString(),
+      sessionId: newSessionId.toString(),
+    },
+    JWT_SECRET,
+    { expiresIn: '15m' },
+  );
+
+  const newRefreshToken = jwt.sign(
+    {
+      userId: session.userId.toString(),
+      sessionId: newSessionId.toString(),
+    },
+    JWT_SECRET,
+    { expiresIn: '30d' },
+  );
 
   const newSession = await SessionsCollection.create({
+    _id: newSessionId,
     userId: session.userId,
-    accessToken,
+    accessToken: newAccessToken,
     refreshToken: newRefreshToken,
     accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
     refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),

@@ -21,7 +21,10 @@ const getAllContacts = async (req, res) => {
   const order = sortOrder === 'desc' ? -1 : 1;
 
   const filterFromQuery = parseFilterParams(req.query);
-  const filter = { ...filterFromQuery };
+  const filter = {
+    ...filterFromQuery,
+    userId: req.user._id,
+  };
 
   if (typeof req.query.isFavourite !== 'undefined') {
     filter.isFavourite = req.query.isFavourite === 'true';
@@ -70,7 +73,11 @@ const getContact = async (req, res) => {
 };
 
 const createContactCtrl = async (req, res) => {
-  const newContact = await createContact(req.body);
+  const newContact = await createContact({
+    ...req.body,
+    userId: req.user._id,
+  });
+
   res.status(201).json({
     status: 201,
     message: 'Successfully created a contact!',
@@ -85,7 +92,7 @@ const updateContactCtrl = async (req, res) => {
     throw new HttpError(400, 'Invalid id format');
   }
 
-  const updatedContact = await updateContact(id, req.body);
+  const updatedContact = await updateContact(id, req.user._id, req.body);
 
   if (!updatedContact) {
     throw new HttpError(404, 'Contact not found');
@@ -105,7 +112,7 @@ const deleteContactCtrl = async (req, res) => {
     throw new HttpError(400, 'Invalid id format');
   }
 
-  const deletedContact = await deleteContact(id);
+  const deletedContact = await deleteContact(id, req.user._id);
 
   if (!deletedContact) {
     throw new HttpError(404, 'Contact not found');
