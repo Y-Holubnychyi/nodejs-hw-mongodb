@@ -19,8 +19,8 @@ export const getPaginatedContacts = async (
   return { contacts, totalItems };
 };
 
-export const getContactById = async (id) => {
-  return Contact.findById(id);
+export const getContactById = async (id, userId) => {
+  return Contact.findOne({ _id: id, userId });
 };
 
 export const createContact = async (data) => {

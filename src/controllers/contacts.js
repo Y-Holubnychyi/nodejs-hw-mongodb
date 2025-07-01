@@ -59,7 +59,7 @@ const getContact = async (req, res) => {
     throw new HttpError(400, 'Invalid id format');
   }
 
-  const contact = await getContactById(id);
+  const contact = await getContactById(id, req.user._id);
 
   if (!contact) {
     throw new HttpError(404, 'Contact not found');
