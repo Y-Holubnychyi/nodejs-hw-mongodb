@@ -15,7 +15,7 @@ import { calculatePaginationData } from '../utils/calculatePaginationData.js';
 
 const { isValidObjectId } = mongoose;
 
-const getAllContacts = async (req, res) => {
+const getAllContacts = async (req, res, next) => {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
   const order = sortOrder === 'desc' ? -1 : 1;
@@ -52,7 +52,7 @@ const getAllContacts = async (req, res) => {
   });
 };
 
-const getContact = async (req, res) => {
+const getContact = async (req, res, next) => {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
@@ -72,7 +72,7 @@ const getContact = async (req, res) => {
   });
 };
 
-const createContactCtrl = async (req, res) => {
+const createContactCtrl = async (req, res, next) => {
   const newContact = await createContact({
     ...req.body,
     userId: req.user._id,
@@ -85,7 +85,7 @@ const createContactCtrl = async (req, res) => {
   });
 };
 
-const updateContactCtrl = async (req, res) => {
+const updateContactCtrl = async (req, res, next) => {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
@@ -105,7 +105,7 @@ const updateContactCtrl = async (req, res) => {
   });
 };
 
-const deleteContactCtrl = async (req, res) => {
+const deleteContactCtrl = async (req, res, next) => {
   const { id } = req.params;
 
   if (!isValidObjectId(id)) {
