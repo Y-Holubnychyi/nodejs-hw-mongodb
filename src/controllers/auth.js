@@ -3,6 +3,7 @@ import {
   loginUser,
   refreshSession,
   logoutUser,
+  requestResetToken,
 } from '../services/auth.js';
 import { THIRTY_DAYS } from '../constants/index.js';
 import createHttpError from 'http-errors';
@@ -80,4 +81,14 @@ export const logoutUserController = async (req, res) => {
   res.clearCookie('sessionId');
 
   res.status(204).send();
+};
+
+export const requestResetEmailController = async (req, res) => {
+  await requestResetToken(req.body.email);
+
+  res.status(200).json({
+    status: 200,
+    message: 'Reset password email has been successfully sent.',
+    data: {},
+  });
 };
