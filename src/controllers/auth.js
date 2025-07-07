@@ -8,6 +8,11 @@ import {
 import { THIRTY_DAYS } from '../constants/index.js';
 import createHttpError from 'http-errors';
 
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import { UsersCollection } from '../db/models/user.js';
+import { SessionsCollection } from '../db/models/session.js';
+
 export const registerUserController = async (req, res) => {
   const user = await registerUser(req.body);
 
@@ -91,4 +96,39 @@ export const requestResetEmailController = async (req, res) => {
     message: 'Reset password email has been successfully sent.',
     data: {},
   });
+};
+
+const { JWT_SECRET } = process.env;
+export const resetPasswordController = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    let payload;
+    try {
+      payload = jwt.verify(token, JWT_SECRET);
+    } catch {
+      throw createHttpError(401, 'Token is expired or invalid.');
+    }
+
+    const email = payload.email;
+
+    const user = await UsersCollection.findOne({ email });
+    if (!user) {
+      throw createHttpError(404, 'User not found!');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    await SessionsCollection.deleteMany({ userId: user._id });
+
+    res.status(200).json({
+      status: 200,
+      message: 'Password has been successfully reset.',
+      data: {},
+    });
+  } catch (error) {
+    next(error);
+  }
 };
