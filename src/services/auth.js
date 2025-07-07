@@ -6,7 +6,7 @@ import { FIFTEEN_MINUTES, THIRTY_DAYS } from '../constants/index.js';
 import jwt from 'jsonwebtoken';
 const { JWT_SECRET } = process.env;
 import mongoose from 'mongoose';
-import { sendEmail } from '../utils/sendMail.js';
+import { sendEmail } from '../utils/send-email.js';
 import path from 'path';
 import fs from 'fs/promises';
 import handlebars from 'handlebars';
@@ -172,4 +172,33 @@ export const requestResetToken = async (email) => {
       'Failed to send the email, please try again later.',
     );
   }
+};
+
+export const resetPassword = async ({ token, password }) => {
+  let payload;
+
+  try {
+    payload = jwt.verify(token, getEnvVar('JWT_SECRET'));
+  } catch (err) {
+    if (err instanceof Error) throw createHttpError(401, err.message);
+    throw err;
+  }
+
+  const user = await UsersCollection.findOne({
+    email: payload.email,
+    _id: payload.sub,
+  });
+
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  const encryptedPassword = await bcrypt.hash(password, 10);
+
+  await UsersCollection.updateOne(
+    { _id: user._id },
+    { password: encryptedPassword },
+  );
+
+  await SessionsCollection.deleteMany({ userId: user._id });
 };

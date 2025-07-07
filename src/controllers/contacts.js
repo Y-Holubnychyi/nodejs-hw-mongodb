@@ -1,21 +1,18 @@
-import mongoose from 'mongoose';
+import createHttpError from 'http-errors';
 import {
   getPaginatedContacts,
   getContactById,
-  createContact,
-  updateContact,
-  deleteContact,
+  createContact as createContactService,
+  updateContact as updateContactService,
+  deleteContact as deleteContactService,
 } from '../services/contacts.js';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import { HttpError } from '../utils/HttpError.js';
 import { parseSortParams } from '../utils/parseSortParams.js';
 import { parsePaginationParams } from '../utils/parsePaginationParams.js';
 import { parseFilterParams } from '../utils/parseFilterParams.js';
 import { calculatePaginationData } from '../utils/calculatePaginationData.js';
+import { processPhotoUpload } from '../utils/processPhotoUpload.js';
 
-const { isValidObjectId } = mongoose;
-
-const getAllContacts = async (req, res, next) => {
+export const getAllContacts = async (req, res) => {
   const { page, perPage } = parsePaginationParams(req.query);
   const { sortBy, sortOrder } = parseSortParams(req.query);
   const order = sortOrder === 'desc' ? -1 : 1;
@@ -52,17 +49,13 @@ const getAllContacts = async (req, res, next) => {
   });
 };
 
-const getContact = async (req, res, next) => {
+export const getContact = async (req, res) => {
   const { id } = req.params;
-
-  if (!isValidObjectId(id)) {
-    throw new HttpError(400, 'Invalid id format');
-  }
 
   const contact = await getContactById(id, req.user._id);
 
   if (!contact) {
-    throw new HttpError(404, 'Contact not found');
+    throw createHttpError(404, 'Contact not found');
   }
 
   res.json({
@@ -72,11 +65,16 @@ const getContact = async (req, res, next) => {
   });
 };
 
-const createContactCtrl = async (req, res, next) => {
-  const newContact = await createContact({
+export const createContact = async (req, res) => {
+  const photoUrl = req.file ? await processPhotoUpload(req.file) : null;
+
+  const contactData = {
     ...req.body,
     userId: req.user._id,
-  });
+    photo: photoUrl,
+  };
+
+  const newContact = await createContactService(contactData);
 
   res.status(201).json({
     status: 201,
@@ -85,17 +83,18 @@ const createContactCtrl = async (req, res, next) => {
   });
 };
 
-const updateContactCtrl = async (req, res, next) => {
+export const updateContact = async (req, res) => {
   const { id } = req.params;
 
-  if (!isValidObjectId(id)) {
-    throw new HttpError(400, 'Invalid id format');
+  if (req.file) {
+    const photoUrl = await processPhotoUpload(req.file);
+    req.body.photo = photoUrl;
   }
 
-  const updatedContact = await updateContact(id, req.user._id, req.body);
+  const updatedContact = await updateContactService(id, req.user._id, req.body);
 
   if (!updatedContact) {
-    throw new HttpError(404, 'Contact not found');
+    throw createHttpError(404, 'Contact not found');
   }
 
   res.json({
@@ -105,26 +104,14 @@ const updateContactCtrl = async (req, res, next) => {
   });
 };
 
-const deleteContactCtrl = async (req, res, next) => {
+export const deleteContact = async (req, res) => {
   const { id } = req.params;
 
-  if (!isValidObjectId(id)) {
-    throw new HttpError(400, 'Invalid id format');
-  }
-
-  const deletedContact = await deleteContact(id, req.user._id);
+  const deletedContact = await deleteContactService(id, req.user._id);
 
   if (!deletedContact) {
-    throw new HttpError(404, 'Contact not found');
+    throw createHttpError(404, 'Contact not found');
   }
 
   res.status(204).send();
-};
-
-export default {
-  getAllContacts: ctrlWrapper(getAllContacts),
-  getContact: ctrlWrapper(getContact),
-  createContact: ctrlWrapper(createContactCtrl),
-  updateContact: ctrlWrapper(updateContactCtrl),
-  deleteContact: ctrlWrapper(deleteContactCtrl),
 };
