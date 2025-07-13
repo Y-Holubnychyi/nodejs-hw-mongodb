@@ -1,0 +1,12 @@
+type: object
+properties:
+  status:
+    type: integer
+    example: 401
+  message:
+    type: string
+    example: Not authorized
+  data:
+    type: object
+    example:
+      message: Not authorized
