@@ -4,7 +4,8 @@ post:
   summary: Create a new contact
   operationId: createContact
   description: >
-    Create a new contact for the authenticated user. Accepts multipart/form-data with an optional photo upload.
+    Create a new contact for the authenticated user.
+    Accepts multipart/form-data with an optional photo upload.
   security:
     - bearerAuth: []
   requestBody:
@@ -13,26 +14,36 @@ post:
       multipart/form-data:
         schema:
           type: object
+          required:
+            - name
+            - phoneNumber
+            - contactType
           properties:
             name:
               type: string
-              example: John Doe
+              description: "Contact's name"
+              example: 'John Doe'
             email:
               type: string
-              example: johndoe@example.com
+              description: "Contact's email (optional)"
+              example: 'johndoe@example.com'
             phoneNumber:
               type: string
-              example: +1234567890
+              description: "Contact's phone number"
+              example: '+1234567890'
             contactType:
               type: string
               enum: [home, work, personal]
-              example: personal
+              description: 'Type of the contact'
+              example: 'personal'
             isFavourite:
               type: boolean
+              description: 'Whether the contact is marked as favourite'
               example: false
             photo:
               type: string
               format: binary
+              description: 'Optional contact photo file (image)'
   responses:
     '201':
       description: Contact successfully created

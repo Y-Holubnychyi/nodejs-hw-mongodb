@@ -1,21 +1,22 @@
 patch:
   tags:
     - Contacts
-  summary: Update a contact
-  operationId: updateContact
+  summary: Update contact partially
+  operationId: patchContact
   description: >
-    Update fields of an existing contact. Accepts multipart/form-data to optionally replace the photo.
+    Update some fields of a contact by ID. Accepts multipart/form-data with optional photo.
   security:
     - bearerAuth: []
   parameters:
-    - name: contactId
-      in: path
+    - in: path
+      name: id
       required: true
       description: ID of the contact to update
       schema:
         type: string
+        example: '68682b958a05bc3855c08c90'
   requestBody:
-    required: true
+    required: false
     content:
       multipart/form-data:
         schema:
@@ -23,22 +24,29 @@ patch:
           properties:
             name:
               type: string
+              description: "Contact's name"
               example: Jane Doe
             email:
               type: string
+              description: "Contact's email"
               example: janedoe@example.com
             phoneNumber:
               type: string
+              description: "Contact's phone number"
               example: +380501234567
             contactType:
               type: string
-              enum: [home, work, personal]
+              description: 'Type of contact'
+              enum: [work, home, personal]
+              example: personal
             isFavourite:
               type: boolean
+              description: 'Is contact in favourites'
               example: true
             photo:
               type: string
               format: binary
+              description: "Contact's photo file"
   responses:
     '200':
       description: Contact successfully updated
@@ -46,6 +54,10 @@ patch:
         application/json:
           schema:
             type: object
+            required:
+              - status
+              - message
+              - data
             properties:
               status:
                 type: integer
@@ -54,22 +66,14 @@ patch:
                 type: string
                 example: Successfully patched a contact!
               data:
-                $ref: '../../components/schemas/contact.yaml'
+                $ref: '../../../components/schemas/contact.yaml'
     '400':
       description: Bad Request
       content:
         application/json:
           schema:
-            $ref: '../../components/responses/400.yaml'
-    '404':
-      description: Contact not found
-      content:
-        application/json:
-          schema:
-            $ref: '../../components/responses/404.yaml'
+            $ref: '../../../components/responses/400.yaml'
     '401':
-      description: Unauthorized
-      content:
-        application/json:
-          schema:
-            $ref: '../../components/responses/401.yaml'
+      $ref: '../../../components/responses/401.yaml'
+    '404':
+      $ref: '../../../components/responses/404.yaml'

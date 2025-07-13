@@ -1,0 +1,12 @@
+post:
+  tags:
+    - Auth
+  summary: Logout a user
+  operationId: logoutUser
+  description: >
+    Logs out the current user by deleting the session and clearing cookies.
+  responses:
+    '204':
+      description: Successfully logged out
+    '401':
+      description: No session found

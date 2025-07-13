@@ -1,0 +1,28 @@
+post:
+  tags:
+    - Auth
+  summary: Login a user
+  operationId: loginUser
+  description: Login with email and password.
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          type: object
+          required:
+            - email
+            - password
+          properties:
+            email:
+              type: string
+              format: email
+              example: user@example.com
+            password:
+              type: string
+              example: mysecret123
+  responses:
+    '200':
+      description: Login successful
+    '401':
+      description: Invalid credentials
