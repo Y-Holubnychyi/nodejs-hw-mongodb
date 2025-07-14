@@ -15,8 +15,7 @@ tags:
     description: Auth endpoints
 
 servers:
-  - url: http://localhost:3000
-  - url: https://your-deployment-url.onrender.com
+  - url: https://nodejs-hw-mongodb-209o.onrender.com
 
 paths:
   /contacts:
