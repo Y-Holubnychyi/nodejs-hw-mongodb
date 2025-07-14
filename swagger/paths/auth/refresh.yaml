@@ -1,12 +1,21 @@
-post:
-  tags:
-    - Auth
-  summary: Refresh session tokens
-  operationId: refreshTokens
-  description: >
-    Refreshes access and refresh tokens using the current session cookies.
-  responses:
-    '200':
-      description: Tokens successfully refreshed
-    '401':
-      description: No session or invalid session
+tags:
+  - Auth
+summary: Refresh session tokens
+operationId: refreshTokens
+description: Refreshes access and refresh tokens using the current session cookies.
+security:
+  - bearerAuth: []
+responses:
+  '200':
+    description: Tokens successfully refreshed
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            accessToken:
+              type: string
+            refreshToken:
+              type: string
+  '401':
+    $ref: '../../components/responses/401.yaml'

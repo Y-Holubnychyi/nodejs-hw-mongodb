@@ -1,24 +1,32 @@
-post:
-  tags:
-    - Auth
-  summary: Send password reset email
-  operationId: sendResetEmail
-  description: Sends a reset link to the user’s email.
-  requestBody:
-    required: true
+tags:
+  - Auth
+summary: Send password reset email
+operationId: sendResetEmail
+description: Sends a reset link to the user’s email.
+security: [] # 👈 Додали сюди
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - email
+        properties:
+          email:
+            type: string
+            format: email
+            example: user@example.com
+responses:
+  '200':
+    description: Email sent
     content:
       application/json:
         schema:
           type: object
-          required:
-            - email
           properties:
-            email:
+            message:
               type: string
-              format: email
-              example: user@example.com
-  responses:
-    '200':
-      description: Email sent
-    '404':
-      description: User not found
+              example: Reset link sent to email
+  '404':
+    $ref: '../../components/responses/404.yaml'

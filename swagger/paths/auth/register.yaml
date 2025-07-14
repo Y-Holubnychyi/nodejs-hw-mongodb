@@ -1,32 +1,53 @@
-post:
-  tags:
-    - Auth
-  summary: Register a new user
-  operationId: registerUser
-  description: Create a new user account.
-  requestBody:
-    required: true
+tags:
+  - Auth
+summary: Register a new user
+operationId: registerUser
+description: Create a new user account.
+security: []
+requestBody:
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        required:
+          - name
+          - email
+          - password
+        properties:
+          name:
+            type: string
+            example: Yevhenii
+          email:
+            type: string
+            format: email
+            example: user@example.com
+          password:
+            type: string
+            example: mysecret123
+responses:
+  '201':
+    description: Successfully registered
     content:
       application/json:
         schema:
           type: object
-          required:
-            - name
-            - email
-            - password
           properties:
-            name:
+            message:
               type: string
-              example: Yevhenii
-            email:
+              example: User created successfully
+            userId:
               type: string
-              format: email
-              example: user@example.com
-            password:
+  '409':
+    description: Conflict - resource already exists
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            status:
+              type: integer
+              example: 409
+            message:
               type: string
-              example: mysecret123
-  responses:
-    '201':
-      description: Successfully registered
-    '409':
-      description: Email already in use
+              example: Email already in use

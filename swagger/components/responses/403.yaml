@@ -1,4 +1,4 @@
-description: Validation error
+description: Forbidden - you do not have access to this resource
 content:
   application/json:
     schema:
@@ -9,11 +9,7 @@ content:
       properties:
         status:
           type: integer
-          example: 400
+          example: 403
         message:
           type: string
-          example: Validation error
-        data:
-          type: object
-          example:
-            message: Validation failed
+          example: Access denied

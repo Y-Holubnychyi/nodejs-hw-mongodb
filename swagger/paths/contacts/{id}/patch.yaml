@@ -1,79 +1,74 @@
-patch:
-  tags:
-    - Contacts
-  summary: Update contact partially
-  operationId: patchContact
-  description: >
-    Update some fields of a contact by ID. Accepts multipart/form-data with optional photo.
-  security:
-    - bearerAuth: []
-  parameters:
-    - in: path
-      name: id
-      required: true
-      description: ID of the contact to update
+tags:
+  - Contacts
+summary: Update contact partially
+operationId: patchContact
+description: >
+  Update some fields of a contact by ID. Accepts multipart/form-data with optional photo.
+security:
+  - bearerAuth: []
+parameters:
+  - in: path
+    name: id
+    required: true
+    description: ID of the contact to update
+    schema:
+      type: string
+      example: '68682b958a05bc3855c08c90'
+requestBody:
+  required: false
+  content:
+    multipart/form-data:
       schema:
-        type: string
-        example: '68682b958a05bc3855c08c90'
-  requestBody:
-    required: false
+        type: object
+        properties:
+          name:
+            type: string
+            description: "Contact's name"
+            example: Jane Doe
+          email:
+            type: string
+            description: "Contact's email"
+            example: janedoe@example.com
+          phoneNumber:
+            type: string
+            description: "Contact's phone number"
+            example: +380501234567
+          contactType:
+            type: string
+            description: 'Type of contact'
+            enum: [work, home, personal]
+            example: personal
+          isFavourite:
+            type: boolean
+            description: 'Is contact in favourites'
+            example: true
+          photo:
+            type: string
+            format: binary
+            description: "Contact's photo file"
+responses:
+  '200':
+    description: Contact successfully updated
     content:
-      multipart/form-data:
+      application/json:
         schema:
           type: object
+          required:
+            - status
+            - message
+            - data
           properties:
-            name:
+            status:
+              type: integer
+              example: 200
+            message:
               type: string
-              description: "Contact's name"
-              example: Jane Doe
-            email:
-              type: string
-              description: "Contact's email"
-              example: janedoe@example.com
-            phoneNumber:
-              type: string
-              description: "Contact's phone number"
-              example: +380501234567
-            contactType:
-              type: string
-              description: 'Type of contact'
-              enum: [work, home, personal]
-              example: personal
-            isFavourite:
-              type: boolean
-              description: 'Is contact in favourites'
-              example: true
-            photo:
-              type: string
-              format: binary
-              description: "Contact's photo file"
-  responses:
-    '200':
-      description: Contact successfully updated
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - status
-              - message
-              - data
-            properties:
-              status:
-                type: integer
-                example: 200
-              message:
-                type: string
-                example: Successfully patched a contact!
-              data:
-                $ref: '../../../components/schemas/contact.yaml'
-    '400':
-      description: Bad Request
-      content:
-        application/json:
-          schema:
-            $ref: '../../../components/responses/400.yaml'
-    '401':
-      $ref: '../../../components/responses/401.yaml'
-    '404':
-      $ref: '../../../components/responses/404.yaml'
+              example: Successfully patched a contact!
+            data:
+              $ref: '../../../components/schemas/contact.yaml'
+  '400':
+    $ref: '../../../components/responses/400.yaml'
+  '401':
+    $ref: '../../../components/responses/401.yaml'
+  '404':
+    $ref: '../../../components/responses/404.yaml'
